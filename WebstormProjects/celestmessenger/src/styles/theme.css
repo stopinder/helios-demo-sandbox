@@ -1,0 +1,16 @@
+:root {
+    --bg-space: linear-gradient(to bottom, #0d0d2b, #1a1a40);
+    --text-light: #f9f9f9;
+    --accent-gold: #e3c565;
+    --accent-moonstone: #7f9eb2;
+    --bubble-bg: rgba(255, 255, 255, 0.05);
+    --font-body: 'Spectral', serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-body, sans-serif);
+    background: var(--bg-space);
+    color: var(--text-light);
+}
