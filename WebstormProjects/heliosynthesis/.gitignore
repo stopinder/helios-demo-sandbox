@@ -7,8 +7,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependency directories
 node_modules
+
+# Output directories
+# Allow dist to be tracked for static deploy
 # dist
+!dist/
 
 dist-ssr
 *.local
