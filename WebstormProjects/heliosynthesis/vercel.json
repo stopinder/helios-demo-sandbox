@@ -1,6 +1,7 @@
 {
-  "buildCommand": "./node_modules/.bin/vite build",
+  "buildCommand": "echo 'Build already done'",
   "outputDirectory": "dist",
   "framework": null
 }
+
 
