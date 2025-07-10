@@ -1,107 +1,122 @@
 <template>
-  <div class="flex flex-col h-screen w-full bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 text-slate-100 relative">
-    <!-- Left Sidebar: ClientPanel -->
-    <ClientPanel
-        v-model="showClientPanel"
-        :client="selectedClient"
-        @view-map="showIFSMap = true"
-    />
+  <div class="flex flex-col h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 text-white relative">
 
-    <!-- Top Header Bar -->
-    <header class="flex items-center justify-between px-6 h-20 bg-slate-900/80 backdrop-blur border-b border-slate-700 z-20">
-      <div class="flex items-center h-full">
-        <img
-            src="/images/logo2.png"
-            alt="Helio Logo"
-            class="h-16 object-contain"
-        />
-      </div>
-      <div class="flex items-center gap-4 text-xl text-slate-200">
-        <button
-            @click="openSettings"
-            title="Settings"
-            class="hover:text-indigo-300 transition"
-        >⚙️</button>
-        <button
-            @click="toggleMainMenu"
-            title="Menu"
-            class="hover:text-indigo-300 transition"
-        >☰</button>
-      </div>
+    <!-- Top Bar -->
+    <header class="h-16 flex items-center justify-between px-6 bg-slate-900/80 border-b border-slate-700 backdrop-blur z-10">
+      <h1 class="text-xl font-semibold text-indigo-300">Heliosynthesis</h1>
+      <div class="text-sm opacity-70">Therapist View</div>
     </header>
 
-    <!-- Main Flex Layout -->
     <div class="flex flex-1 overflow-hidden">
-      <!-- Canvas Area -->
-      <div class="flex-1 px-10 py-8 flex items-center justify-center overflow-hidden relative z-10">
-        <div class="w-full max-w-5xl h-full bg-slate-800/30 rounded-3xl shadow-2xl backdrop-blur-xl border border-slate-500/20 p-10 relative">
+
+      <!-- Slide-in Left Sidebar -->
+      <aside
+          v-if="selectedClient"
+          class="w-80 bg-slate-800/90 backdrop-blur border-r border-slate-600 p-4 transition-transform duration-300 z-20"
+      >
+        <h2 class="text-lg font-bold mb-2">{{ selectedClient.name }}</h2>
+        <p class="text-sm text-slate-300">{{ selectedClient.email }}</p>
+        <p class="text-sm text-green-400 mt-2">{{ selectedClient.state }}</p>
+
+        <div class="mt-4">
+          <p class="text-sm mb-1">IFS Map Preview</p>
+          <img
+              src="/images/ifs-map.png"
+              alt="IFS Map"
+              class="w-full rounded border border-slate-600 cursor-pointer"
+              @click="showIFSMap = true"
+          />
+        </div>
+      </aside>
+
+      <!-- Main Canvas -->
+      <main class="flex-1 flex items-center justify-center p-8 relative">
+        <div class="w-full max-w-5xl h-full bg-slate-800/30 border border-slate-600 rounded-2xl shadow-xl p-8 backdrop-blur">
           <div v-if="showIFSMap" class="w-full h-full flex items-center justify-center">
             <img
                 src="/images/ifs-map.png"
-                alt="IFS Map"
-                class="max-h-full max-w-full object-contain border border-slate-600 rounded-lg"
+                alt="IFS Map Full"
+                class="max-h-full max-w-full object-contain rounded border border-slate-600"
             />
             <button
                 @click="showIFSMap = false"
-                class="absolute top-4 right-4 bg-slate-800/80 hover:bg-slate-700 text-white px-3 py-1 text-sm rounded shadow"
+                class="absolute top-4 right-4 bg-slate-900 hover:bg-slate-700 text-white px-3 py-1 text-sm rounded"
             >
               ✕ Close Map
             </button>
           </div>
-
-          <HeliosCanvas v-else />
-
-          <!-- Floating Message Input -->
-          <div class="absolute bottom-6 left-6 right-6 flex items-center gap-3 bg-slate-900/80 backdrop-blur border border-slate-700 rounded-full px-4 py-2 shadow-lg z-40">
-            <input
-                v-model="messageText"
-                type="text"
-                placeholder="Type or speak..."
-                class="flex-1 bg-slate-800 text-white placeholder-slate-400 rounded-full px-4 py-2 focus:outline-none"
-            />
+          <div v-else class="text-center text-slate-400">
+            <p class="text-xl">Main Canvas Placeholder</p>
+            <p class="text-sm opacity-50">This area will show editable content like the IFS map</p>
           </div>
         </div>
-      </div>
+      </main>
 
-      <!-- Right Sidebar: Messaging or Tools -->
-      <TherapistMessaging
-          :messages="messages"
-          @send="handleSend"
-          class="w-80 bg-slate-900/80 border-l border-slate-700 p-4 overflow-y-auto"
-      />
+      <!-- Fixed Right Sidebar -->
+      <aside class="w-80 bg-slate-900/80 border-l border-slate-700 p-4 backdrop-blur z-10">
+        <h3 class="text-sm font-semibold text-slate-300 mb-2">Client Search</h3>
+        <input
+            type="text"
+            v-model="searchTerm"
+            placeholder="Search clients..."
+            class="w-full mb-4 p-2 rounded bg-slate-800 border border-slate-700 text-white placeholder-slate-500"
+        />
+
+        <ul class="space-y-2">
+          <li
+              v-for="client in filteredClients"
+              :key="client.email"
+              @click="selectClient(client)"
+              class="cursor-pointer p-2 rounded hover:bg-slate-700"
+          >
+            <p class="font-medium">{{ client.name }}</p>
+            <p class="text-xs text-slate-400">{{ client.email }}</p>
+          </li>
+        </ul>
+      </aside>
+
     </div>
+
+    <!-- Bottom Bar -->
+    <footer class="h-10 bg-slate-900/70 border-t border-slate-700 text-xs text-center text-slate-400 flex items-center justify-center">
+      Heliosynthesis © 2025
+    </footer>
   </div>
 </template>
 
 <script setup>
-import ClientPanel from '@/components/ClientPanel.vue'
-import HeliosCanvas from '@/components/HeliosCanvas.vue'
-import TherapistMessaging from '@/components/TherapistMessaging.vue'
+import { ref, computed } from 'vue'
 
-import { ref } from 'vue'
-
-const showClientPanel = ref(true)
+const searchTerm = ref('')
 const selectedClient = ref(null)
 const showIFSMap = ref(false)
-const messageText = ref('')
-const messages = ref([])
 
-function handleSend(msg) {
-  if (msg) {
-    messages.value.push({ text: msg, sender: 'therapist' })
-    messageText.value = ''
+const clients = ref([
+  {
+    name: 'Annie Wilson',
+    email: 'annie@example.com',
+    state: 'Stable, mildly anxious',
+  },
+  {
+    name: 'Ben Carter',
+    email: 'ben@example.com',
+    state: 'Depressed, avoidant',
+  },
+  {
+    name: 'Clara Lee',
+    email: 'clara@example.com',
+    state: 'In high activation',
   }
-}
+])
 
-function toggleMainMenu() {
-  console.log("Toggle main menu clicked")
-}
+const filteredClients = computed(() =>
+    clients.value.filter(c =>
+        c.name.toLowerCase().includes(searchTerm.value.toLowerCase())
+    )
+)
 
-function openSettings() {
-  console.log("Open settings clicked")
+function selectClient(client) {
+  selectedClient.value = client
+  showIFSMap.value = false
 }
 </script>
-
-<style scoped>
-/* Optional: Add scoped styling here if needed */
-</style>
