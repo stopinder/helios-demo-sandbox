@@ -34,9 +34,29 @@
 
       <!-- Main Canvas -->
       <div class="flex-1 relative px-10 py-6 overflow-y-auto">
-        <p class="text-lg mb-4 text-faded">Begin your reflection here.</p>
-        <!-- Message input and whisper go here later -->
+        <!-- Whisper Prompt -->
+        <p class="italic text-faded mb-6">Is this a protector emerging?</p>
+
+        <!-- Message Input -->
+        <div
+            class="absolute bottom-6 transition-all duration-200"
+            :class="showPanel ? 'left-10 right-[350px]' : 'left-10 right-10'"
+        >
+
+        <div class="flex items-center gap-3 bg-midnight/70 border border-slate-700 rounded-full px-4 py-2 shadow backdrop-blur-md">
+            <input
+                v-model="message"
+                type="text"
+                placeholder="Speak or type here..."
+                class="flex-1 bg-transparent text-white placeholder-faded focus:outline-none text-sm"
+            />
+            <button @click="sendMessage" class="p-2 rounded-full hover:bg-accent/20 transition">
+              <MicrophoneIcon class="h-5 w-5 text-faded" />
+            </button>
+          </div>
+        </div>
       </div>
+
 
       <!-- Right Slide Panel -->
       <transition name="slide-fade">
@@ -76,7 +96,11 @@
 </template>
 
 <script setup>
+import { MicrophoneIcon } from '@heroicons/vue/24/outline'
+
 import { ref } from 'vue'
+const drawerWidth = 320 // width in pixels, used for spacing input when drawer is open
+
 const showPanel = ref(false)
 const togglePanel = () => showPanel.value = !showPanel.value
 </script>
