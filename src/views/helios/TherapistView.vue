@@ -28,24 +28,48 @@
       <div class="w-64 bg-slate/90 border-r border-slate-700 px-4 py-6 overflow-y-auto space-y-6">
         <!-- Clients Dropdown -->
         <div>
-          <button
-              @click="showClients = !showClients"
-              class="w-full flex justify-between items-center text-xs uppercase text-faded mb-2"
-          >
-            Clients
-            <span class="text-faded text-sm">{{ showClients ? '▲' : '▼' }}</span>
-          </button>
+          <div class="flex justify-between items-center mb-2">
+            <button
+                @click="showClients = !showClients"
+                class="flex justify-between items-center text-xs uppercase text-faded w-full"
+            >
+              <span>Clients</span>
+              <span class="text-faded text-sm">{{ showClients ? '▲' : '▼' }}</span>
+            </button>
+            <button
+                @click="showAddClientModal = true"
+                class="text-faded text-lg hover:text-white ml-2 transition"
+                title="Add Client"
+            >
+              +
+            </button>
+          </div>
+
           <transition name="fade">
             <ul
                 v-show="showClients"
                 class="space-y-2 text-sm max-h-40 overflow-y-auto pr-1 text-slate-300 scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-transparent"
             >
-              <li @click="togglePanel" class="cursor-pointer hover:text-accent">Annie Wilson</li>
-              <li class="cursor-pointer hover:text-accent">Ben Carter</li>
-              <li class="cursor-pointer hover:text-accent">Clara Lee</li>
+              <li
+                  v-for="(client, index) in clients"
+                  :key="index"
+                  @click="togglePanel"
+                  class="flex justify-between items-center cursor-pointer hover:text-accent group"
+              >
+                <span>{{ client.name }}</span>
+                <button
+                    @click.stop="removeClient(index)"
+                    class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 text-xs transition-opacity"
+                    title="Remove Client"
+                >
+                  🗑
+                </button>
+              </li>
             </ul>
           </transition>
         </div>
+      </div>
+
 
         <!-- Sessions Dropdown -->
         <div>
@@ -73,10 +97,52 @@
 
           </transition>
         </div>
+      </div><!-- Clients Dropdown -->
+    <div>
+      <div class="flex justify-between items-center mb-2">
+        <button
+            @click="showClients = !showClients"
+            class="flex justify-between items-center text-xs uppercase text-faded w-full"
+        >
+          <span>Clients</span>
+          <span class="text-faded text-sm">{{ showClients ? '▲' : '▼' }}</span>
+        </button>
+        <button
+            @click="showAddClientModal = true"
+            class="text-faded text-lg hover:text-white ml-2 transition"
+            title="Add Client"
+        >
+          +
+        </button>
       </div>
 
+      <transition name="fade">
+        <ul
+            v-show="showClients"
+            class="space-y-2 text-sm max-h-40 overflow-y-auto pr-1 text-slate-300 scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-transparent"
+        >
+          <li
+              v-for="(client, index) in clients"
+              :key="index"
+              @click="togglePanel"
+              class="flex justify-between items-center cursor-pointer hover:text-accent group"
+          >
+            <span>{{ client.name }}</span>
+            <button
+                @click.stop="removeClient(index)"
+                class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 text-xs transition-opacity"
+                title="Remove Client"
+            >
+              🗑
+            </button>
+          </li>
+        </ul>
+      </transition>
+    </div>
 
-      <!-- Main Canvas -->
+
+
+    <!-- Main Canvas -->
       <div class="flex-1 relative px-10 py-6 overflow-y-auto">
         <!-- Whisper Prompt -->
         <p class="italic text-faded mb-6">Is this a protector emerging?</p>
@@ -120,7 +186,7 @@
           <option>CBT</option>
           <option>EMDR</option>
           <option>Somatic</option>
-          <option>Eclectic</option>
+          <option>Transactional Analysis</option>
         </select>
         <select class="bg-midnight text-white px-3 py-1 rounded text-sm">
           <option>Reflective</option>
@@ -133,7 +199,6 @@
         <span class="material-icons cursor-pointer">settings</span>
       </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -142,8 +207,8 @@ import { VideoCameraIcon, GlobeAltIcon } from '@heroicons/vue/24/solid'
 
 import { ref } from 'vue'
 const drawerWidth = 320 // width in pixels, used for spacing input when drawer is open
-const showClients = ref(true)
-const showSessions = ref(true)
+const showClients = ref(false)
+const showSessions = ref(false)
 const sessions = ref([
   { label: 'July 9 - Check-in', date: '2025-07-09' },
   { label: 'July 2 - Processing', date: '2025-07-02' },
@@ -151,6 +216,29 @@ const sessions = ref([
 ])
 
 const showPanel = ref(false)
+const showAddClientModal = ref(false)
+const newClientName = ref('')
+const clients = ref([
+  { name: 'Annie Wilson' },
+  { name: 'Ben Carter' },
+  { name: 'Clara Lee' }
+])
+
+function addClient() {
+  const name = newClientName.value.trim()
+  if (name) {
+    clients.value.push({ name })
+    newClientName.value = ''
+    showAddClientModal.value = false
+  }
+}
+
+function removeClient(index) {
+  if (confirm("Are you sure you want to remove this client?")) {
+    clients.value.splice(index, 1)
+  }
+}
+
 const togglePanel = () => showPanel.value = !showPanel.value
 </script>
 
