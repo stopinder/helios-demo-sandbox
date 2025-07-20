@@ -1,5 +1,5 @@
 <template>
-  <div class="relative h-screen font-sans bg-midnight text-white overflow-hidden">
+  <div class="relative min-h-screen font-sans bg-midnight text-white overflow-x-hidden overflow-y-auto">
     <!-- Top Bar -->
     <div class="fixed top-0 left-0 right-0 h-14 bg-slate flex items-center justify-between px-6 shadow z-40">
       <div class="text-lg font-semibold">Heliosynthesis</div>
@@ -16,9 +16,9 @@
     </div>
 
     <!-- Main Body -->
-    <div class="pt-14 pb-16 h-full flex overflow-hidden">
+    <div class="pt-14 pb-16 h-full flex">
       <!-- Left Sidebar -->
-      <div class="w-64 bg-slate/90 border-r border-slate-700 px-4 py-6 overflow-y-auto space-y-6">
+      <div class="w-64 bg-midnight/80 border-r border-slate-700 px-4 py-6 overflow-y-auto space-y-6">
         <!-- Clients Dropdown -->
         <div>
           <div class="flex justify-between items-center mb-2">
@@ -32,7 +32,7 @@
             <ul v-show="showClients" class="space-y-2 text-sm max-h-40 overflow-y-auto pr-1 text-slate-300 scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-transparent">
               <li v-for="(client, index) in clients" :key="index" @click="togglePanel" class="flex justify-between items-center cursor-pointer hover:text-accent group">
                 <span>{{ client.name }}</span>
-                <button @click.stop="removeClient(index)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 text-xs transition-opacity" title="Remove Client">🗑</button>
+                <button @click.stop="removeClient(index)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 text-xs transition-opacity">🗑</button>
               </li>
             </ul>
           </transition>
@@ -55,30 +55,20 @@
       </div>
 
       <!-- Main Canvas -->
-      <div
-          class="flex-1 relative px-10 py-6 overflow-y-auto transition-all duration-200"
-          :class="showPanel ? 'pr-[350px]' : 'pr-10'"
-      >
+      <div class="flex-1 px-10 py-6 overflow-y-auto" :class="showPanel ? 'mr-[320px]' : ''">
+        <p class="italic text-faded mb-6">Is this a protector emerging?</p>
 
-      <p class="italic text-faded mb-6">Is this a protector emerging?</p>
-
-        <!-- Tag Demo Block -->
+        <!-- Tag Area -->
         <div class="bg-slate-800 rounded p-4 shadow mb-6">
-          <p class="text-sm text-gray-300 mb-2">
-            Session: "Worked with protector guarding exile. Solar themes active."
-          </p>
+          <p class="text-sm text-gray-300 mb-2">Session: "{{ session.summary }}"</p>
           <div class="flex flex-wrap">
             <TagBadge v-for="tag in session.tags" :key="tag.id" :tag="tag" />
           </div>
         </div>
 
-        <!-- Message Box -->
-        <div
-            class="absolute bottom-6 left-10 transition-all duration-200"
-            :class="showPanel ? 'right-[340px]' : 'right-10'"
-        >
-
-        <div class="flex items-center gap-3 bg-midnight/70 border border-slate-700 rounded-full px-4 py-2 shadow backdrop-blur-md">
+        <!-- Message Bar -->
+        <div class="fixed bottom-16 left-64" :class="showPanel ? 'right-[320px]' : 'right-0'">
+          <div class="mx-10 flex items-center gap-3 bg-midnight/70 border border-slate-700 rounded-full px-4 py-2 shadow backdrop-blur-md">
             <input v-model="message" type="text" placeholder="Speak or type here..." class="flex-1 bg-transparent text-white placeholder-faded focus:outline-none text-sm" />
             <button @click="sendMessage" class="p-2 rounded-full hover:bg-accent/20 transition">
               <MicrophoneIcon class="h-5 w-5 text-faded" />
@@ -87,17 +77,19 @@
         </div>
       </div>
 
-      <!-- Right Slide Panel -->
+      <!-- Right Sidebar -->
       <transition name="slide-fade">
-        <div v-if="showPanel" class="fixed top-14 bottom-16 right-0 w-80 bg-slate border-l border-slate-700 p-6 z-50 shadow-lg overflow-y-auto">
+        <div v-if="showPanel" class="fixed top-14 bottom-16 right-0 w-[320px] bg-slate border-l border-slate-700 p-6 z-50 shadow-lg overflow-y-auto">
           <button @click="togglePanel" class="text-sm text-faded mb-4">&larr; Close</button>
-          <img src="/images/ifs-map.png" class="w-48 h-auto mx-auto rounded-md cursor-pointer mb-5 object-contain" @click="showMap = true" />
+
+          <!-- Client Image -->
+          <img src="/images/annie.jpg" class="w-12 h-12 rounded-full mx-auto object-cover mb-2" alt="Client face" />
           <div class="text-center mb-6">
             <p class="text-lg font-semibold">Annie Wilson</p>
             <p class="text-sm text-faded">annie@example.com</p>
           </div>
 
-          <!-- Collapsible Past Sessions -->
+          <!-- Past Sessions -->
           <div>
             <button @click="showPastSessions = !showPastSessions" class="w-full flex justify-between items-center text-xs uppercase text-faded tracking-wide mb-2">
               Past Sessions
@@ -114,13 +106,6 @@
                 <p v-if="selectedSessionIndex !== null" class="mt-4 text-sm italic text-faded leading-snug">
                   {{ pastSessions[selectedSessionIndex].summary }}
                 </p>
-                <div v-if="selectedSessionIndex !== null" class="mt-2 flex flex-wrap">
-                  <TagBadge
-                      v-for="tag in pastSessions[selectedSessionIndex].tags"
-                      :key="tag.id"
-                      :tag="tag"
-                  />
-                </div>
               </div>
             </transition>
           </div>
@@ -135,12 +120,9 @@
           <option>IFS</option>
           <option>CBT</option>
           <option>EMDR</option>
-          <option>Somatic</option>
-          <option>Transactional Analysis</option>
         </select>
         <select class="bg-midnight text-white px-3 py-1 rounded text-sm">
           <option>Reflective</option>
-          <option>Clinical</option>
           <option>Supervision</option>
         </select>
       </div>
@@ -162,16 +144,13 @@ import { MicrophoneIcon, Bars3BottomLeftIcon } from '@heroicons/vue/24/outline'
 import TagBadge from '../../components/TagBadge.vue'
 import { sampleTags } from '../../data/sampleTags'
 
-const session = {
-  id: 'demo1',
-  summary: 'Worked with protector guarding exile. Solar themes active.',
-  tags: [sampleTags[0], sampleTags[1], sampleTags[2]]
-}
-
 const showClients = ref(false)
 const showSessions = ref(false)
 const showAddClientModal = ref(false)
-const newClientName = ref('')
+const showPanel = ref(true)
+const showPastSessions = ref(false)
+const selectedSessionIndex = ref(null)
+const message = ref('')
 const clients = ref([
   { name: 'Annie Wilson' },
   { name: 'Ben Carter' },
@@ -186,45 +165,26 @@ const pastSessions = ref([
   {
     date: '2025-07-09',
     label: 'July 9 – Check-in',
-    summary: 'Annie shared ongoing difficulty with boundary-setting.',
-    tags: [sampleTags[0], sampleTags[2]]
+    summary: 'Annie shared difficulty with boundaries. Protector noted.',
   },
   {
     date: '2025-07-02',
     label: 'July 2 – Processing',
-    summary: 'Explored burden carried since adolescence.',
-    tags: [sampleTags[1]]
-  },
-  {
-    date: '2025-06-24',
-    label: 'June 24 – Assessment',
-    summary: 'Initial mapping of protectors and exiles. Identified resistance to inner attention.',
-    tags: [sampleTags[0], sampleTags[1]]
+    summary: 'Explored teenage burden; grounding effective.',
   }
 ])
-
-const selectedSessionIndex = ref(null)
-const showPanel = ref(false)
-const showMap = ref(false)
-const openDataModule = ref(false)
-const showPastSessions = ref(false)
-const message = ref('')
+const session = {
+  id: 'demo1',
+  summary: 'Worked with protector guarding exile. Solar themes active.',
+  tags: [sampleTags[0], sampleTags[1], sampleTags[2]],
+}
 
 function togglePanel() {
   showPanel.value = !showPanel.value
 }
 
-function addClient() {
-  const name = newClientName.value.trim()
-  if (name) {
-    clients.value.push({ name })
-    newClientName.value = ''
-    showAddClientModal.value = false
-  }
-}
-
 function removeClient(index) {
-  if (confirm("Are you sure you want to remove this client?")) {
+  if (confirm("Remove this client?")) {
     clients.value.splice(index, 1)
   }
 }
@@ -236,4 +196,3 @@ function sendMessage() {
   }
 }
 </script>
-
