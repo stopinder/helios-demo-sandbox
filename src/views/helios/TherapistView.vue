@@ -55,10 +55,14 @@
       </div>
 
       <!-- Main Canvas -->
-      <div class="flex-1 relative px-10 py-6 overflow-y-auto">
-        <p class="italic text-faded mb-6">Is this a protector emerging?</p>
+      <div
+          class="flex-1 relative px-10 py-6 overflow-y-auto transition-all duration-200"
+          :class="showPanel ? 'pr-[350px]' : 'pr-10'"
+      >
 
-        <!-- 🟡 Tag Demo Block -->
+      <p class="italic text-faded mb-6">Is this a protector emerging?</p>
+
+        <!-- Tag Demo Block -->
         <div class="bg-slate-800 rounded p-4 shadow mb-6">
           <p class="text-sm text-gray-300 mb-2">
             Session: "Worked with protector guarding exile. Solar themes active."
@@ -69,8 +73,12 @@
         </div>
 
         <!-- Message Box -->
-        <div class="absolute bottom-6 transition-all duration-200" :class="showPanel ? 'left-10 right-[350px]' : 'left-10 right-10'">
-          <div class="flex items-center gap-3 bg-midnight/70 border border-slate-700 rounded-full px-4 py-2 shadow backdrop-blur-md">
+        <div
+            class="absolute bottom-6 left-10 transition-all duration-200"
+            :class="showPanel ? 'right-[340px]' : 'right-10'"
+        >
+
+        <div class="flex items-center gap-3 bg-midnight/70 border border-slate-700 rounded-full px-4 py-2 shadow backdrop-blur-md">
             <input v-model="message" type="text" placeholder="Speak or type here..." class="flex-1 bg-transparent text-white placeholder-faded focus:outline-none text-sm" />
             <button @click="sendMessage" class="p-2 rounded-full hover:bg-accent/20 transition">
               <MicrophoneIcon class="h-5 w-5 text-faded" />
@@ -106,6 +114,13 @@
                 <p v-if="selectedSessionIndex !== null" class="mt-4 text-sm italic text-faded leading-snug">
                   {{ pastSessions[selectedSessionIndex].summary }}
                 </p>
+                <div v-if="selectedSessionIndex !== null" class="mt-2 flex flex-wrap">
+                  <TagBadge
+                      v-for="tag in pastSessions[selectedSessionIndex].tags"
+                      :key="tag.id"
+                      :tag="tag"
+                  />
+                </div>
               </div>
             </transition>
           </div>
@@ -144,15 +159,13 @@
 import { ref } from 'vue'
 import { VideoCameraIcon, GlobeAltIcon, Cog6ToothIcon } from '@heroicons/vue/24/solid'
 import { MicrophoneIcon, Bars3BottomLeftIcon } from '@heroicons/vue/24/outline'
-
-// ✅ RELATIVE IMPORTS (matching your project structure)
 import TagBadge from '../../components/TagBadge.vue'
 import { sampleTags } from '../../data/sampleTags'
 
 const session = {
   id: 'demo1',
   summary: 'Worked with protector guarding exile. Solar themes active.',
-  tags: [sampleTags[0], sampleTags[1], sampleTags[2]], // Protector, Exile, Solar
+  tags: [sampleTags[0], sampleTags[1], sampleTags[2]]
 }
 
 const showClients = ref(false)
@@ -173,19 +186,23 @@ const pastSessions = ref([
   {
     date: '2025-07-09',
     label: 'July 9 – Check-in',
-    summary: 'Annie shared ongoing difficulty with boundary-setting. Protector dynamics were gently acknowledged.'
+    summary: 'Annie shared ongoing difficulty with boundary-setting.',
+    tags: [sampleTags[0], sampleTags[2]]
   },
   {
     date: '2025-07-02',
     label: 'July 2 – Processing',
-    summary: 'Explored burden carried since adolescence; moderate emotional intensity with grounding at end.'
+    summary: 'Explored burden carried since adolescence.',
+    tags: [sampleTags[1]]
   },
   {
     date: '2025-06-24',
     label: 'June 24 – Assessment',
-    summary: 'Initial mapping of protectors and exiles. Identified resistance to inner attention.'
+    summary: 'Initial mapping of protectors and exiles. Identified resistance to inner attention.',
+    tags: [sampleTags[0], sampleTags[1]]
   }
 ])
+
 const selectedSessionIndex = ref(null)
 const showPanel = ref(false)
 const showMap = ref(false)
@@ -219,3 +236,4 @@ function sendMessage() {
   }
 }
 </script>
+
