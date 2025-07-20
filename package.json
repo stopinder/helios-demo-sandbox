@@ -21,6 +21,7 @@
     "@heroicons/vue": "^2.2.0",
     "inter-ui": "^4.1.1",
     "tailwind-scrollbar-hide": "^4.0.0",
+    "vue-cal": "^4.10.2",
     "vue-router": "^4.5.1"
   }
 }

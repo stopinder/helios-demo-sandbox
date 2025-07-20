@@ -52,44 +52,90 @@
             </ul>
           </transition>
         </div>
+
+        <!-- Calendar Access -->
+        <CalendarTrigger @openCalendar="handleOpenCalendar" />
       </div>
 
       <!-- Main Canvas -->
       <div class="flex-1 px-10 py-6 overflow-y-auto" :class="showPanel ? 'mr-[320px]' : ''">
-        <p class="italic text-faded mb-6">Is this a protector emerging?</p>
+        <div v-if="showCalendar">
+          <div class="relative bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-4 max-w-[1024px] mx-auto">
+            <!-- Close Calendar Button -->
+            <div class="flex justify-end mb-2">
+              <button
+                  @click="showCalendar = false"
+                  class="text-sm text-faded hover:text-white px-3 py-1 rounded hover:bg-slate-700 transition"
+              >
+                &larr; Close Calendar
+              </button>
+            </div>
 
-        <!-- Tag Area -->
-        <div class="bg-slate-800 rounded p-4 shadow mb-6">
-          <p class="text-sm text-gray-300 mb-2">Session: "{{ session.summary }}"</p>
-          <div class="flex flex-wrap">
-            <TagBadge v-for="tag in session.tags" :key="tag.id" :tag="tag" />
+            <!-- Google Calendar iframe -->
+            <div class="h-[600px] w-full overflow-hidden rounded">
+              <iframe
+                  src="https://calendar.google.com/calendar/embed?src=en.thai%23holiday%40group.v.calendar.google.com&ctz=Asia%2FBangkok"
+                  style="border: 0"
+                  width="100%"
+                  height="100%"
+                  frameborder="0"
+                  scrolling="no"
+              ></iframe>
+            </div>
+
+            <div class="mt-2">
+              <a
+                  href="https://calendar.google.com/"
+                  target="_blank"
+                  class="text-sm text-indigo-400 hover:underline"
+              >
+                Open in Google Calendar →
+              </a>
+            </div>
           </div>
         </div>
 
-        <!-- Message Bar -->
-        <div class="fixed bottom-16 left-64" :class="showPanel ? 'right-[320px]' : 'right-0'">
-          <div class="mx-10 flex items-center gap-3 bg-midnight/70 border border-slate-700 rounded-full px-4 py-2 shadow backdrop-blur-md">
-            <input v-model="message" type="text" placeholder="Speak or type here..." class="flex-1 bg-transparent text-white placeholder-faded focus:outline-none text-sm" />
-            <button @click="sendMessage" class="p-2 rounded-full hover:bg-accent/20 transition">
-              <MicrophoneIcon class="h-5 w-5 text-faded" />
-            </button>
+        <div v-else>
+          <p class="italic text-faded mb-6">Is this a protector emerging?</p>
+
+          <!-- Tag Area -->
+          <div class="bg-slate-800 rounded p-4 shadow mb-6">
+            <p class="text-sm text-gray-300 mb-2">Session: "{{ session.summary }}"</p>
+            <div class="flex flex-wrap">
+              <TagBadge v-for="tag in session.tags" :key="tag.id" :tag="tag" />
+            </div>
+          </div>
+
+          <!-- Message Bar -->
+          <div class="fixed bottom-16 left-64" :class="showPanel ? 'right-[320px]' : 'right-0'">
+            <div class="mx-10 flex items-center gap-3 bg-midnight/70 border border-slate-700 rounded-full px-4 py-2 shadow backdrop-blur-md">
+              <input
+                  v-model="message"
+                  type="text"
+                  placeholder="Speak or type here..."
+                  class="flex-1 bg-transparent text-white placeholder-faded focus:outline-none text-sm"
+              />
+              <button @click="sendMessage" class="p-2 rounded-full hover:bg-accent/20 transition">
+                <MicrophoneIcon class="h-5 w-5 text-faded" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+
 
       <!-- Right Sidebar -->
       <transition name="slide-fade">
         <div v-if="showPanel" class="fixed top-14 bottom-16 right-0 w-[320px] bg-slate border-l border-slate-700 p-6 z-50 shadow-lg overflow-y-auto">
           <button @click="togglePanel" class="text-sm text-faded mb-4">&larr; Close</button>
 
-          <!-- Client Image -->
           <img src="/images/annie.jpg" class="w-12 h-12 rounded-full mx-auto object-cover mb-2" alt="Client face" />
           <div class="text-center mb-6">
             <p class="text-lg font-semibold">Annie Wilson</p>
             <p class="text-sm text-faded">annie@example.com</p>
           </div>
 
-          <!-- Past Sessions -->
           <div>
             <button @click="showPastSessions = !showPastSessions" class="w-full flex justify-between items-center text-xs uppercase text-faded tracking-wide mb-2">
               Past Sessions
@@ -135,10 +181,19 @@
       </div>
     </div>
   </div>
+
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import CalendarTrigger from '../../components/sidebar/CalendarTrigger.vue'
+
+const showCalendar = ref(false)
+
+function handleOpenCalendar() {
+  showCalendar.value = true
+}
+
 import { VideoCameraIcon, GlobeAltIcon, Cog6ToothIcon } from '@heroicons/vue/24/solid'
 import { MicrophoneIcon, Bars3BottomLeftIcon } from '@heroicons/vue/24/outline'
 import TagBadge from '../../components/TagBadge.vue'
@@ -147,7 +202,7 @@ import { sampleTags } from '../../data/sampleTags'
 const showClients = ref(false)
 const showSessions = ref(false)
 const showAddClientModal = ref(false)
-const showPanel = ref(true)
+const showPanel = ref(false)
 const showPastSessions = ref(false)
 const selectedSessionIndex = ref(null)
 const message = ref('')
