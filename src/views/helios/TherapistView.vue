@@ -52,6 +52,22 @@
             </ul>
           </transition>
         </div>
+        <!-- Therapist Tools / Resources -->
+        <div>
+          <button @click="showTools = !showTools" class="flex justify-between items-center text-xs uppercase text-faded w-full">
+            <span>Resources</span>
+            <span class="text-sm">{{ showTools ? '▲' : '▼' }}</span>
+          </button>
+          <transition name="fade">
+            <ul v-show="showTools" class="mt-2 space-y-2 text-sm text-slate-300">
+              <li class="cursor-pointer hover:text-white" @click="assignResource('video', 'Polyvagal Basics')">🎥 Polyvagal Basics</li>
+              <li class="cursor-pointer hover:text-white" @click="assignResource('audio', 'Grounding Breath')">🎧 Grounding Breath</li>
+              <li class="cursor-pointer hover:text-white" @click="assignResource('emdr', 'Bilateral Tones')">🔁 Bilateral Tones</li>
+              <li class="cursor-pointer hover:text-white" @click="assignResource('prompt', 'Parts Mapping Guide')">🌀 Parts Mapping Guide</li>
+              <li class="cursor-pointer hover:text-white" @click="assignResource('cbt', 'Thought Record Sheet')">🧠 CBT Thought Sheet</li>
+            </ul>
+          </transition>
+        </div>
 
         <!-- Calendar Access -->
         <CalendarTrigger @openCalendar="handleOpenCalendar" />
@@ -198,6 +214,12 @@ import { VideoCameraIcon, GlobeAltIcon, Cog6ToothIcon } from '@heroicons/vue/24/
 import { MicrophoneIcon, Bars3BottomLeftIcon } from '@heroicons/vue/24/outline'
 import TagBadge from '../../components/TagBadge.vue'
 import { sampleTags } from '../../data/sampleTags'
+const showTools = ref(false)
+
+function assignResource(type, label) {
+  console.log(`Assigned ${type}: ${label}`)
+  // TODO: later emit to client panel/message log
+}
 
 const showClients = ref(false)
 const showSessions = ref(false)
