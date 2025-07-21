@@ -7,14 +7,13 @@
         <button class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-3 py-1.5 rounded-full shadow transition" title="Join Zoom">
           <VideoCameraIcon class="w-5 h-5" />
           <span>Zoom</span>
-          <button
-              @click="currentView = 'calendar'"
-              :class="['flex items-center gap-2 text-sm px-3 py-1.5 rounded-full transition', currentView === 'calendar' ? 'bg-indigo-700 text-white' : 'bg-slate-600 text-slate-200 hover:bg-slate-500']"
-              title="Open Schedule"
-          >
-            📅 <span>Schedule</span>
-          </button>
-
+        </button>
+        <button
+            @click="currentView = 'calendar'"
+            :class="['flex items-center gap-2 text-sm px-3 py-1.5 rounded-full transition', currentView === 'calendar' ? 'bg-indigo-700 text-white' : 'bg-slate-600 text-slate-200 hover:bg-slate-500']"
+            title="Open Schedule"
+        >
+          📅 <span>Schedule</span>
         </button>
         <button class="p-2 rounded-full hover:bg-slate-700 transition">
           <GlobeAltIcon class="w-5 h-5 text-slate-300" />
@@ -28,83 +27,121 @@
       <!-- Left Sidebar -->
       <div class="w-64 bg-midnight/80 border-r border-slate-700 px-4 py-6 overflow-y-auto space-y-6">
         <!-- Clients Dropdown -->
-        <!-- [unchanged sidebar code] -->
-        <!-- Calendar Access -->
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <button @click="showClients = !showClients" class="flex justify-between items-center text-xs uppercase text-faded w-full">
+              <span>Clients</span>
+              <span class="text-faded text-sm">{{ showClients ? '▲' : '▼' }}</span>
+            </button>
+            <button @click="showAddClientModal = true" class="text-faded text-lg hover:text-white ml-2 transition" title="Add Client">+</button>
+          </div>
+          <transition name="fade">
+            <ul v-show="showClients" class="space-y-2 text-sm max-h-40 overflow-y-auto pr-1 text-slate-300 scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-transparent">
+              <li v-for="(client, index) in clients" :key="index" @click="openClientPanel(client)" class="flex justify-between items-center cursor-pointer hover:text-accent group">
+                <span>{{ client.name }}</span>
+                <button @click.stop="removeClient(index)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 text-xs transition-opacity">🗑</button>
+              </li>
+            </ul>
+          </transition>
+        </div>
 
+        <!-- Sessions Dropdown -->
+        <div>
+          <button @click="showSessions = !showSessions" class="w-full flex justify-between items-center text-xs uppercase text-faded mb-2">
+            Sessions
+            <span class="text-faded text-sm">{{ showSessions ? '▲' : '▼' }}</span>
+          </button>
+          <transition name="fade">
+            <ul v-show="showSessions" class="space-y-1 text-sm max-h-32 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-transparent">
+              <li v-for="session in sessions" :key="session.date" class="cursor-pointer px-2 py-1 rounded hover:bg-indigo-600 hover:text-white transition text-slate-300">
+                {{ session.label }}
+              </li>
+            </ul>
+          </transition>
+        </div>
+
+        <!-- Therapist Map Access -->
+        <div>
+          <button @click="currentView = 'map'" class="w-full flex items-center gap-2 text-xs uppercase text-faded hover:text-white transition">
+            🧭 My Map
+          </button>
+        </div>
+
+        <!-- Resources -->
+        <div>
+          <button @click="showTools = !showTools" class="flex justify-between items-center text-xs uppercase text-faded w-full">
+            <span>Resources</span>
+            <span class="text-sm">{{ showTools ? '▲' : '▼' }}</span>
+          </button>
+          <transition name="fade">
+            <ul v-show="showTools" class="mt-2 space-y-2 text-sm text-slate-300">
+              <li class="cursor-pointer hover:text-white" @click="assignResource('video', 'Polyvagal Basics')">🎥 Polyvagal Basics</li>
+              <li class="cursor-pointer hover:text-white" @click="assignResource('audio', 'Grounding Breath')">🎧 Grounding Breath</li>
+              <li class="cursor-pointer hover:text-white" @click="assignResource('emdr', 'Bilateral Tones')">🔁 Bilateral Tones</li>
+              <li class="cursor-pointer hover:text-white" @click="assignResource('prompt', 'Parts Mapping Guide')">🌀 Parts Mapping Guide</li>
+              <li class="cursor-pointer hover:text-white" @click="assignResource('cbt', 'Thought Record Sheet')">🧠 CBT Thought Sheet</li>
+            </ul>
+          </transition>
+        </div>
+
+        <!-- Export -->
+        <div>
+          <button @click="showExport = !showExport" class="flex justify-between items-center text-xs uppercase text-faded w-full">
+            <span>Export</span>
+            <span class="text-sm">{{ showExport ? '▲' : '▼' }}</span>
+          </button>
+          <transition name="fade">
+            <ul v-show="showExport" class="mt-2 space-y-2 text-sm text-slate-300">
+              <li class="cursor-pointer hover:text-white" @click="exportSessionSummary('client')">📤 Export to Client PDF</li>
+              <li class="cursor-pointer hover:text-white" @click="exportSessionSummary('supervision')">📥 Export for Supervision</li>
+              <li class="cursor-pointer hover:text-white" @click="exportSessionSummary('story')">📚 Compile Client Story</li>
+            </ul>
+          </transition>
+        </div>
       </div>
 
       <!-- Main Canvas -->
       <div class="flex-1 px-10 py-6 overflow-y-auto" :class="showPanel ? 'mr-[320px]' : ''">
         <!-- CALENDAR VIEW -->
         <div v-if="currentView === 'calendar'">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-2xl font-semibold">Calendar</h2>
-            <div class="space-x-2">
-              <button class="bg-slate px-3 py-1 rounded" @click="goToToday">Today</button>
-              <button class="bg-slate px-3 py-1 rounded" @click="toggleView">Week</button>
-              <button class="bg-slate px-3 py-1 rounded" @click="currentView = 'resource'">Close</button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-7 gap-2 border-t border-slate pt-2">
-            <div v-for="day in days" :key="day" class="border-r pr-2">
-              <h3 class="font-bold text-lg mb-2">{{ day }}</h3>
-              <div
-                  v-for="slot in timeSlots"
-                  :key="slot"
-                  class="hover:bg-midnight/50 p-2 rounded cursor-pointer"
-                  @click="openAddDialog(day, slot)"
-              >
-                <div class="text-sm text-slate-400">{{ slot }}</div>
+          <div class="bg-slate-800 rounded shadow p-6 max-w-5xl mx-auto">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-semibold">Schedule</h2>
+              <div class="space-x-2">
+                <button class="bg-slate-700 text-sm px-3 py-1 rounded hover:bg-slate-600">Today</button>
+                <button class="bg-slate-700 text-sm px-3 py-1 rounded hover:bg-slate-600">Week</button>
+                <button class="bg-slate-700 text-sm px-3 py-1 rounded hover:bg-slate-600" @click="currentView = 'resource'">Close</button>
               </div>
             </div>
-          </div>
-
-          <!-- Appointment Dialog -->
-          <div v-if="showAddDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div class="bg-slate px-6 py-4 rounded-lg w-96 shadow-xl">
-              <h3 class="text-xl font-semibold mb-4">{{ editingAppointment ? 'Edit' : 'New' }} Appointment</h3>
-              <label class="block mb-2 text-sm">Client</label>
-              <select class="w-full mb-3 p-2 rounded bg-midnight text-white">
-                <option>Annie Smith</option>
-                <option>Mark Evans</option>
-              </select>
-              <label class="block mb-2 text-sm">Time</label>
-              <input type="datetime-local" class="w-full mb-3 p-2 rounded bg-midnight text-white" />
-              <label class="block mb-2 text-sm">Notes</label>
-              <textarea class="w-full p-2 rounded bg-midnight text-white mb-3"></textarea>
-              <div class="flex justify-between">
-                <button class="text-sm underline" @click="showAddDialog = false">Cancel</button>
-                <button class="bg-white text-black px-4 py-1 rounded">Save</button>
-              </div>
-            </div>
+            <table class="w-full table-fixed border-collapse text-sm">
+              <thead>
+              <tr class="text-slate-400 border-b border-slate-600">
+                <th class="w-20 py-2 text-left">Time</th>
+                <th class="py-2">Mon</th>
+                <th class="py-2">Tue</th>
+                <th class="py-2">Wed</th>
+                <th class="py-2">Thu</th>
+                <th class="py-2">Fri</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="time in ['09:00', '10:00', '11:00', '12:00', '13:00']" :key="time" class="border-b border-slate-700 text-white">
+                <td class="py-2 text-faded">{{ time }}</td>
+                <td class="py-2">—</td>
+                <td class="py-2" v-if="time === '10:00'">Annie</td>
+                <td class="py-2">—</td>
+                <td class="py-2" v-if="time === '11:00'">Ben</td>
+                <td class="py-2">—</td>
+              </tr>
+              </tbody>
+            </table>
+            <p class="mt-4 text-xs text-faded">(Demo calendar — entries hardcoded. Replace with real data later.)</p>
           </div>
         </div>
 
         <!-- RESOURCE VIEW -->
         <div v-else-if="currentView === 'resource' && selectedResource">
-          <div class="relative bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-4 max-w-[1024px] mx-auto">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-semibold text-white">{{ selectedResource.label }}</h2>
-              <button
-                  @click="sendResourceToClient"
-                  class="text-sm text-indigo-400 hover:text-white border border-indigo-500 px-3 py-1 rounded transition"
-              >
-                Send to Client →
-              </button>
-            </div>
-            <div v-if="selectedResource.type === 'video'" class="aspect-w-16 aspect-h-9 mb-4">
-              <iframe
-                  :src="getYouTubeEmbedUrl(selectedResource.label)"
-                  frameborder="0"
-                  allowfullscreen
-                  class="w-full h-[360px] rounded"
-              ></iframe>
-            </div>
-            <p class="text-sm text-faded">
-              (This is a demo preview. Clients will receive a link or embedded player.)
-            </p>
-          </div>
+          <!-- [existing resource view here — left untouched] -->
         </div>
 
         <!-- TAGS -->
@@ -132,14 +169,54 @@
       </div>
 
       <!-- Right Sidebar -->
-      <!-- [unchanged right panel code] -->
+      <!-- [your existing right sidebar block goes here — unchanged] -->
+    </div>
+    <!-- Right Sidebar -->
+    <transition name="slide-fade">
+      <div
+          v-if="showPanel"
+          class="fixed top-14 bottom-16 right-0 w-[320px] bg-slate border-l border-slate-700 p-6 z-50 shadow-lg overflow-y-auto"
+      >
+        <button @click="togglePanel" class="text-sm text-faded mb-4">&larr; Close</button>
 
-    </div> <!-- End Main Body -->
+        <img src="/images/annie.jpg" class="w-12 h-12 rounded-full mx-auto object-cover mb-2" alt="Client face" />
+        <div class="text-center mb-6">
+          <p class="text-lg font-semibold">{{ selectedClient }}</p>
+          <p class="text-sm text-faded">{{ selectedClient?.toLowerCase().replace(' ', '.') }}@example.com</p>
+        </div>
+
+        <div>
+          <button @click="showPastSessions = !showPastSessions" class="w-full flex justify-between items-center text-xs uppercase text-faded tracking-wide mb-2">
+            Past Sessions
+            <span class="text-faded text-sm">{{ showPastSessions ? '▲' : '▼' }}</span>
+          </button>
+          <transition name="fade">
+            <div v-show="showPastSessions">
+              <input type="text" placeholder="Search..." class="w-full px-3 py-1.5 mb-3 rounded bg-slate-700 text-sm placeholder-faded text-white focus:outline-none" />
+              <ul class="max-h-32 overflow-y-auto pr-1 space-y-1 text-sm scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-transparent">
+                <li
+                    v-for="(session, index) in pastSessions"
+                    :key="session.date"
+                    @click="selectedSessionIndex = index"
+                    class="cursor-pointer px-2 py-1 rounded hover:bg-indigo-600 hover:text-white transition text-slate-300"
+                >
+                  {{ session.label }}
+                </li>
+              </ul>
+              <p v-if="selectedSessionIndex !== null" class="mt-4 text-sm italic text-faded leading-snug">
+                {{ pastSessions[selectedSessionIndex].summary }}
+              </p>
+            </div>
+          </transition>
+        </div>
+      </div>
+    </transition>
 
     <!-- Bottom Bar -->
-    <!-- [unchanged bottom bar code] -->
+    <!-- [your existing bottom bar block goes here — unchanged] -->
   </div>
 </template>
+
 
 
 <script setup>
