@@ -30,10 +30,16 @@
           </div>
           <transition name="fade">
             <ul v-show="showClients" class="space-y-2 text-sm max-h-40 overflow-y-auto pr-1 text-slate-300 scrollbar-thin scrollbar-thumb-slate-500 scrollbar-track-transparent">
-              <li v-for="(client, index) in clients" :key="index" @click="togglePanel" class="flex justify-between items-center cursor-pointer hover:text-accent group">
+              <li
+                  v-for="(client, index) in clients"
+                  :key="index"
+                  @click="openClientPanel(client)"
+                  class="flex justify-between items-center cursor-pointer hover:text-accent group"
+              >
                 <span>{{ client.name }}</span>
                 <button @click.stop="removeClient(index)" class="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-500 text-xs transition-opacity">🗑</button>
               </li>
+
             </ul>
           </transition>
         </div>
@@ -52,6 +58,16 @@
             </ul>
           </transition>
         </div>
+        <!-- Therapist Map Access -->
+        <div>
+          <button
+              @click="currentView = 'map'"
+              class="w-full flex items-center gap-2 text-xs uppercase text-faded hover:text-white transition"
+          >
+            🧭 My Map
+          </button>
+        </div>
+
         <!-- Therapist Tools / Resources -->
         <div>
           <button @click="showTools = !showTools" class="flex justify-between items-center text-xs uppercase text-faded w-full">
@@ -75,46 +91,36 @@
 
       <!-- Main Canvas -->
       <div class="flex-1 px-10 py-6 overflow-y-auto" :class="showPanel ? 'mr-[320px]' : ''">
-        <div v-if="showCalendar">
+        <div v-if="currentView === 'resource' && selectedResource">
           <div class="relative bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-4 max-w-[1024px] mx-auto">
-            <!-- Close Calendar Button -->
-            <div class="flex justify-end mb-2">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-semibold text-white">
+                {{ selectedResource.label }}
+              </h2>
               <button
-                  @click="showCalendar = false"
-                  class="text-sm text-faded hover:text-white px-3 py-1 rounded hover:bg-slate-700 transition"
+                  @click="sendResourceToClient"
+                  class="text-sm text-indigo-400 hover:text-white border border-indigo-500 px-3 py-1 rounded transition"
               >
-                &larr; Close Calendar
+                Send to Client →
               </button>
             </div>
 
-            <!-- Google Calendar iframe -->
-            <div class="h-[600px] w-full overflow-hidden rounded">
+            <div v-if="selectedResource.type === 'video'" class="aspect-w-16 aspect-h-9 mb-4">
               <iframe
-                  src="https://calendar.google.com/calendar/embed?src=en.thai%23holiday%40group.v.calendar.google.com&ctz=Asia%2FBangkok"
-                  style="border: 0"
-                  width="100%"
-                  height="100%"
+                  :src="getYouTubeEmbedUrl(selectedResource.label)"
                   frameborder="0"
-                  scrolling="no"
+                  allowfullscreen
+                  class="w-full h-[360px] rounded"
               ></iframe>
             </div>
 
-            <div class="mt-2">
-              <a
-                  href="https://calendar.google.com/"
-                  target="_blank"
-                  class="text-sm text-indigo-400 hover:underline"
-              >
-                Open in Google Calendar →
-              </a>
-            </div>
+            <p class="text-sm text-faded">
+              (This is a demo preview. Clients will receive a link or embedded player.)
+            </p>
           </div>
         </div>
 
-        <div v-else>
-          <p class="italic text-faded mb-6">Is this a protector emerging?</p>
-
-          <!-- Tag Area -->
+        <!-- Tag Area -->
           <div class="bg-slate-800 rounded p-4 shadow mb-6">
             <p class="text-sm text-gray-300 mb-2">Session: "{{ session.summary }}"</p>
             <div class="flex flex-wrap">
@@ -173,7 +179,7 @@
           </div>
         </div>
       </transition>
-    </div>
+
 
     <!-- Bottom Bar -->
     <div class="fixed bottom-0 left-0 right-0 h-16 bg-slate flex items-center justify-between px-6 shadow-inner z-40">
@@ -196,38 +202,36 @@
         <Cog6ToothIcon class="h-5 w-5 text-faded cursor-pointer" />
       </div>
     </div>
-  </div>
+  </div> <!-- closes the main pt-14 pb-16 h-full flex wrapper -->
+
 
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import CalendarTrigger from '../../components/sidebar/CalendarTrigger.vue'
-
-const showCalendar = ref(false)
-
-function handleOpenCalendar() {
-  showCalendar.value = true
-}
-
 import { VideoCameraIcon, GlobeAltIcon, Cog6ToothIcon } from '@heroicons/vue/24/solid'
 import { MicrophoneIcon, Bars3BottomLeftIcon } from '@heroicons/vue/24/outline'
 import TagBadge from '../../components/TagBadge.vue'
 import { sampleTags } from '../../data/sampleTags'
-const showTools = ref(false)
 
-function assignResource(type, label) {
-  console.log(`Assigned ${type}: ${label}`)
-  // TODO: later emit to client panel/message log
-}
+// View and state controls
+const currentView = ref(null) // 'calendar', 'map', 'resource', etc.
+const selectedResource = ref(null)
 
+// Dropdowns and UI toggles
 const showClients = ref(false)
 const showSessions = ref(false)
+const showTools = ref(false)
 const showAddClientModal = ref(false)
 const showPanel = ref(false)
-const showPastSessions = ref(false)
+
+// Client and session data
+const selectedClient = ref(null)
 const selectedSessionIndex = ref(null)
+const showPastSessions = ref(false)
 const message = ref('')
+
 const clients = ref([
   { name: 'Annie Wilson' },
   { name: 'Ben Carter' },
@@ -250,10 +254,35 @@ const pastSessions = ref([
     summary: 'Explored teenage burden; grounding effective.',
   }
 ])
+
+// Sample session tags
 const session = {
   id: 'demo1',
   summary: 'Worked with protector guarding exile. Solar themes active.',
   tags: [sampleTags[0], sampleTags[1], sampleTags[2]],
+}
+
+// Event handlers
+function handleOpenCalendar() {
+  currentView.value = 'calendar'
+}
+
+function assignResource(type, label) {
+  selectedResource.value = { type, label }
+  currentView.value = 'resource'
+  console.log(`Assigned ${type}: ${label}`)
+}
+
+function getYouTubeEmbedUrl(label) {
+  if (label === 'Polyvagal Basics') {
+    return 'https://www.youtube.com/embed/BRcLtewujf8'
+  }
+  return ''
+}
+
+function openClientPanel(client) {
+  selectedClient.value = client.name
+  showPanel.value = true
 }
 
 function togglePanel() {
