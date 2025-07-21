@@ -101,6 +101,7 @@
       </div>
 
       <!-- Main Canvas -->
+
       <div class="flex-1 px-10 py-6 overflow-y-auto" :class="showPanel ? 'mr-[320px]' : ''">
         <!-- CALENDAR VIEW -->
         <div v-if="currentView === 'calendar'">
@@ -179,8 +180,9 @@
         </div>
 
         <!-- MESSAGE BAR -->
-        <div class="fixed bottom-16 left-64" :class="showPanel ? 'right-[320px]' : 'right-0'">
-          <div class="mx-10 flex items-center gap-3 bg-midnight/70 border border-slate-700 rounded-full px-4 py-2 shadow backdrop-blur-md">
+        <div class="fixed bottom-20 left-64" :class="showPanel ? 'right-[320px]' : 'right-0'">
+
+        <div class="mx-10 flex items-center gap-3 bg-midnight/70 border border-slate-700 rounded-full px-4 py-2 shadow backdrop-blur-md">
             <input
                 v-model="message"
                 type="text"
@@ -239,6 +241,119 @@
     </transition>
 
     <!-- Bottom Bar -->
+    <div class="fixed bottom-0 left-0 right-0 h-14 bg-slate-900 border-t border-slate-700 px-6 flex items-center justify-between text-sm z-50">
+      <div class="flex items-center gap-4">
+        <!-- Views Dropdown (Improved) -->
+        <div class="relative w-56">
+          <Listbox v-model="selectedViewMode">
+            <div class="relative">
+              <ListboxButton
+                  class="relative w-full cursor-pointer rounded-xl bg-slate-800 border border-slate-600 py-2 pl-4 pr-10 text-left text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm shadow-sm hover:bg-slate-700 transition"
+              >
+                <span class="block truncate">{{ selectedViewMode || 'Select View' }}</span>
+                <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center pr-2 text-slate-400">▾</span>
+              </ListboxButton>
+
+              <transition
+                  leave-active-class="transition ease-in duration-100"
+                  leave-from-class="opacity-100"
+                  leave-to-class="opacity-0"
+              >
+                <ListboxOptions
+                    class="absolute bottom-full mb-1 max-h-60 w-full overflow-auto rounded-xl bg-slate-800 py-1 text-sm shadow-2xl ring-1 ring-black ring-opacity-10 focus:outline-none z-50"
+                >
+                  <ListboxOption
+                      v-slot="{ active, selected }"
+                      v-for="option in ['Clinical Supervision', 'Symbolic', 'Reflective Journal', 'Co-Witnessing', 'Guided Mode']"
+                      :key="option"
+                      :value="option"
+                      as="template"
+                  >
+                    <li
+                        :class="[
+                active ? 'bg-indigo-600 text-white' : 'text-slate-300',
+                'relative cursor-pointer select-none py-2 pl-4 pr-10 transition'
+              ]"
+                    >
+              <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">
+                {{ option }}
+              </span>
+                      <span
+                          v-if="selected"
+                          class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-300 text-xs"
+                      >
+                ✓
+              </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
+        </div>
+
+        <!-- Framework Dropdown (Improved) -->
+        <div class="relative w-56">
+          <Listbox v-model="selectedFramework">
+            <div class="relative">
+              <ListboxButton
+                  class="relative w-full cursor-pointer rounded-xl bg-slate-800 border border-slate-600 py-2 pl-4 pr-10 text-left text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm shadow-sm hover:bg-slate-700 transition"
+              >
+                <span class="block truncate">{{ selectedFramework || 'Select Framework' }}</span>
+                <span class="pointer-events-none absolute inset-y-0 right-2 flex items-center pr-2 text-slate-400">▾</span>
+              </ListboxButton>
+
+              <transition
+                  leave-active-class="transition ease-in duration-100"
+                  leave-from-class="opacity-100"
+                  leave-to-class="opacity-0"
+              >
+                <ListboxOptions
+                    class="absolute bottom-full mb-1 max-h-60 w-full overflow-auto rounded-xl bg-slate-800 py-1 text-sm shadow-2xl ring-1 ring-black ring-opacity-10 focus:outline-none z-50"
+                >
+                  <ListboxOption
+                      v-slot="{ active, selected }"
+                      v-for="option in ['IFS', 'CBT', 'EMDR', 'Somatic', 'Psychodynamic', 'Transactional Analysis']"
+                      :key="option"
+                      :value="option"
+                      as="template"
+                  >
+                    <li
+                        :class="[
+                active ? 'bg-indigo-600 text-white' : 'text-slate-300',
+                'relative cursor-pointer select-none py-2 pl-4 pr-10 transition'
+              ]"
+                    >
+              <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">
+                {{ option }}
+              </span>
+                      <span
+                          v-if="selected"
+                          class="absolute inset-y-0 right-0 flex items-center pr-3 text-indigo-300 text-xs"
+                      >
+                ✓
+              </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
+        </div>
+
+
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="italic text-faded cursor-pointer hover:text-white transition flex items-center gap-1">
+          🪶 <span>Whisper Mode</span>
+        </div>
+        <button class="p-2 rounded-full hover:bg-slate-700 transition">
+          <Cog6ToothIcon class="w-5 h-5 text-slate-300" />
+        </button>
+      </div>
+    </div>
+
     <!-- [your existing bottom bar block goes here — unchanged] -->
   </div>
 </template>
@@ -247,6 +362,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
+
 import CalendarTrigger from '../../components/sidebar/CalendarTrigger.vue'
 import { VideoCameraIcon, GlobeAltIcon, Cog6ToothIcon } from '@heroicons/vue/24/solid'
 import { MicrophoneIcon, Bars3BottomLeftIcon } from '@heroicons/vue/24/outline'
@@ -256,6 +373,9 @@ import { sampleTags } from '../../data/sampleTags'
 // 🔹 View and UI state
 const currentView = ref('resource') // options: 'calendar', 'map', 'resource', etc.
 const selectedResource = ref(null)
+const selectedViewMode = ref('Clinical Supervision')
+const selectedFramework = ref('IFS')
+
 
 const showClients = ref(false)
 const showSessions = ref(false)
