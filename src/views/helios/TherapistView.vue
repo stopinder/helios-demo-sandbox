@@ -141,8 +141,34 @@
 
         <!-- RESOURCE VIEW -->
         <div v-else-if="currentView === 'resource' && selectedResource">
-          <!-- [existing resource view here — left untouched] -->
+          <div class="relative bg-slate-800 border border-slate-700 rounded-lg shadow-lg p-4 max-w-[1024px] mx-auto">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-semibold text-white">
+                {{ selectedResource.label }}
+              </h2>
+              <button
+                  @click="sendResourceToClient"
+                  class="text-sm text-indigo-400 hover:text-white border border-indigo-500 px-3 py-1 rounded transition"
+              >
+                Send to Client →
+              </button>
+            </div>
+
+            <div v-if="selectedResource.type === 'video'" class="aspect-w-16 aspect-h-9 mb-4">
+              <iframe
+                  :src="getYouTubeEmbedUrl(selectedResource.label)"
+                  frameborder="0"
+                  allowfullscreen
+                  class="w-full h-[360px] rounded"
+              ></iframe>
+            </div>
+
+            <p class="text-sm text-faded">
+              (This is a demo preview. Clients will receive a link or embedded player.)
+            </p>
+          </div>
         </div>
+
 
         <!-- TAGS -->
         <div class="bg-slate-800 rounded p-4 shadow mb-6">
