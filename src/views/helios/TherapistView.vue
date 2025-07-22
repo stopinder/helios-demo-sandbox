@@ -3,24 +3,46 @@
     <!-- Top Bar -->
     <div class="fixed top-0 left-0 right-0 h-14 bg-slate flex items-center justify-between px-6 shadow z-40">
       <div class="text-lg font-semibold">Heliosynthesis</div>
+
       <div class="flex items-center gap-3">
-        <button class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-3 py-1.5 rounded-full shadow transition" title="Join Zoom">
+        <!-- ✅ Moved here -->
+        <button
+            @click="openMapView('therapist')"
+            class="flex items-center gap-2 text-indigo-300 hover:text-white hover:border-indigo-400 border border-indigo-300 px-3 py-1.5 rounded-full text-sm italic tracking-wide transition backdrop-blur-sm"
+            title="View My Map"
+        >
+          🧭 <span>My Map</span>
+        </button>
+
+        <button
+            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-3 py-1.5 rounded-full shadow transition"
+            title="Join Zoom"
+        >
           <VideoCameraIcon class="w-5 h-5" />
           <span>Zoom</span>
         </button>
+
         <button
             @click="currentView = 'calendar'"
-            :class="['flex items-center gap-2 text-sm px-3 py-1.5 rounded-full transition', currentView === 'calendar' ? 'bg-indigo-700 text-white' : 'bg-slate-600 text-slate-200 hover:bg-slate-500']"
+            :class="[
+        'flex items-center gap-2 text-sm px-3 py-1.5 rounded-full transition',
+        currentView === 'calendar'
+          ? 'bg-indigo-700 text-white'
+          : 'bg-slate-600 text-slate-200 hover:bg-slate-500'
+      ]"
             title="Open Schedule"
         >
           📅 <span>Schedule</span>
         </button>
+
         <button class="p-2 rounded-full hover:bg-slate-700 transition">
           <GlobeAltIcon class="w-5 h-5 text-slate-300" />
         </button>
+
         <img src="/images/therapist-profile.jpg" alt="Therapist" class="h-8 w-8 rounded-full object-cover" />
       </div>
     </div>
+
 
     <!-- Main Body -->
     <div class="pt-14 pb-16 h-full flex">
@@ -60,12 +82,9 @@
           </transition>
         </div>
 
-        <!-- Therapist Map Access -->
-        <div>
-          <button @click="currentView = 'map'" class="w-full flex items-center gap-2 text-xs uppercase text-faded hover:text-white transition">
-            🧭 My Map
-          </button>
-        </div>
+
+
+
 
         <!-- Resources -->
         <div>
@@ -83,6 +102,19 @@
             </ul>
           </transition>
         </div>
+        <!-- Billing -->
+        <div>
+          <button @click="showBilling = !showBilling" class="flex justify-between items-center text-xs uppercase text-faded w-full">
+            <span>Billing</span>
+            <span class="text-sm">{{ showBilling ? '▲' : '▼' }}</span>
+          </button>
+          <transition name="fade">
+            <ul v-show="showBilling" class="mt-2 space-y-2 text-sm text-slate-300">
+              <li class="cursor-pointer hover:text-white" @click="currentView = 'billing'">📊 Income & Payouts</li>
+            </ul>
+          </transition>
+        </div>
+
 
         <!-- Export -->
         <div>
@@ -99,6 +131,7 @@
           </transition>
         </div>
       </div>
+
 
       <!-- Main Canvas -->
 
@@ -169,7 +202,81 @@
             </p>
           </div>
         </div>
+        <!-- MAP VIEW -->
+        <div v-if="currentView === 'map'" class="relative max-w-5xl mx-auto p-6 bg-slate-800 rounded shadow">
+          <img
+              :src="mapType === 'client' ? '/images/client-map.jpg' : '/images/map-placeholder.jpg'"
+              alt="Map Preview"
+              :class="[
+  'rounded-lg shadow-lg',
+  mapType === 'client' ? 'max-w-full max-h-[400px]' : 'max-w-[600px] max-h-[300px]'
+]"
 
+          />
+
+          <p class="mt-2 text-sm text-faded italic text-center">
+            (Interactive Map Preview — click or speak to explore parts, themes, protectors...)
+          </p>
+          <!-- Interaction Controls -->
+          <div class="mt-6 flex justify-center gap-4">
+            <button
+                @click="summarizeMapReflection"
+                class="px-4 py-2 bg-indigo-700 hover:bg-indigo-600 text-white text-sm rounded-full shadow transition"
+            >
+              🧠 Summarize & Tag
+            </button>
+            <button
+                @click="saveAndCloseMap"
+                class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-full shadow transition"
+            >
+              💾 Save & Close
+            </button>
+            <button
+                @click="stayAndExplore"
+                class="px-4 py-2 bg-slate-600 hover:bg-slate-500 text-white text-sm rounded-full shadow transition"
+            >
+              🔁 Stay & Explore
+            </button>
+          </div>
+
+        </div>
+
+        <!-- BILLING VIEW -->
+        <div v-if="currentView === 'billing'" class="max-w-4xl mx-auto p-6 bg-slate-800 border border-slate-700 rounded shadow">
+          <h2 class="text-2xl font-semibold text-white mb-4">Billing Overview</h2>
+
+          <!-- Total Income -->
+          <div class="bg-slate-700 rounded p-4 mb-4">
+            <p class="text-sm text-faded">Total Income (Last 30 Days)</p>
+            <p class="text-xl font-semibold text-green-400">$3,420.00</p>
+          </div>
+
+          <!-- Upcoming Payouts -->
+          <div class="bg-slate-700 rounded p-4 mb-4">
+            <p class="text-sm text-faded mb-2">Upcoming Payouts</p>
+            <ul class="text-sm text-slate-200 space-y-1">
+              <li>➡️ $1,200.00 – arriving Jul 25</li>
+              <li>➡️ $840.00 – arriving Aug 1</li>
+            </ul>
+          </div>
+
+          <!-- Recent Charges -->
+          <div class="bg-slate-700 rounded p-4 mb-4">
+            <p class="text-sm text-faded mb-2">Recent Client Charges</p>
+            <ul class="text-sm text-slate-200 space-y-1">
+              <li>💳 Annie – $120.00 – Jul 20</li>
+              <li>💳 Ben – $100.00 – Jul 19</li>
+              <li>💳 Casey – $150.00 – Jul 18</li>
+            </ul>
+          </div>
+
+          <!-- Projections -->
+          <div class="bg-slate-700 rounded p-4">
+            <p class="text-sm text-faded">Projected Monthly Total</p>
+            <p class="text-lg font-semibold text-indigo-300">$4,500.00</p>
+            <p class="text-xs text-faded italic mt-1">Estimate based on past sessions & recurring clients.</p>
+          </div>
+        </div>
 
         <!-- TAGS -->
         <div class="bg-slate-800 rounded p-4 shadow mb-6">
@@ -179,6 +286,7 @@
           </div>
         </div>
 
+
         <!-- MESSAGE BAR -->
         <div class="fixed bottom-20 left-64" :class="showPanel ? 'right-[320px]' : 'right-0'">
 
@@ -186,7 +294,8 @@
             <input
                 v-model="message"
                 type="text"
-                placeholder="Speak or type here..."
+                :placeholder="currentView === 'map' ? 'Speak to the map…' : 'Speak or type here...'"
+
                 class="flex-1 bg-transparent text-white placeholder-faded focus:outline-none text-sm"
             />
             <button @click="sendMessage" class="p-2 rounded-full hover:bg-accent/20 transition">
@@ -212,6 +321,16 @@
           <p class="text-lg font-semibold">{{ selectedClient }}</p>
           <p class="text-sm text-faded">{{ selectedClient?.toLowerCase().replace(' ', '.') }}@example.com</p>
         </div>
+        <!-- View Client Map Button -->
+        <div class="text-center mb-6">
+          <button
+              @click="openMapView('client')"
+              class="mt-2 px-4 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-full shadow transition"
+          >
+            🗺 View Client Map
+          </button>
+        </div>
+
 
         <div>
           <button @click="showPastSessions = !showPastSessions" class="w-full flex justify-between items-center text-xs uppercase text-faded tracking-wide mb-2">
@@ -375,7 +494,9 @@ const currentView = ref('resource') // options: 'calendar', 'map', 'resource', e
 const selectedResource = ref(null)
 const selectedViewMode = ref('Clinical Supervision')
 const selectedFramework = ref('IFS')
+const mapType = ref('therapist') // or 'client'
 
+const showBilling = ref(false)
 
 const showClients = ref(false)
 const showSessions = ref(false)
@@ -481,6 +602,31 @@ function sendMessage() {
   if (message.value.trim()) {
     console.log("Message sent:", message.value)
     message.value = ''
+    function summarizeMapReflection() {
+      console.log("🧠 Summarize & Tag triggered");
+      // Later: call AI to suggest tags or insights
+    }
+
+    function saveAndCloseMap() {
+      console.log("💾 Save & Close triggered");
+      currentView.value = null;
+    }
+
+    function stayAndExplore() {
+      console.log("🔁 Stay & Explore triggered");
+      message.value = '';
+    }
+
   }
 }
+
+// ✅ Now it's outside and works globally
+function openMapView(type) {
+  mapType.value = type
+  currentView.value = 'map'
+  console.log(type === 'client' ? 'Opened Client Map' : 'Opened Therapist Map')
+}
+
+
+
 </script>
