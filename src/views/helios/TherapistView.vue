@@ -21,6 +21,17 @@
           <VideoCameraIcon class="w-5 h-5" />
           <span>Zoom</span>
         </button>
+        <!-- Anonymize Toggle -->
+        <button
+            @click="isAnonymized = !isAnonymized"
+            class="flex items-center gap-2 text-sm px-3 py-1.5 rounded-full transition border"
+            :class="isAnonymized
+    ? 'bg-red-600 text-white border-red-700 hover:bg-red-500'
+    : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'"
+            title="Toggle anonymized view (no real names, no emails)"
+        >
+          🕵️ <span>{{ isAnonymized ? 'Anonymized' : 'Full View' }}</span>
+        </button>
 
         <button
             @click="currentView = 'calendar'"
@@ -37,6 +48,13 @@
 
         <button class="p-2 rounded-full hover:bg-slate-700 transition">
           <GlobeAltIcon class="w-5 h-5 text-slate-300" />
+        </button>
+        <button
+            @click="logout"
+            class="flex items-center gap-1 text-sm text-red-400 hover:text-white border border-red-400 hover:border-white px-3 py-1.5 rounded-full transition"
+            title="Log Out"
+        >
+          ⏻ <span>Logout</span>
         </button>
 
         <img src="/images/therapist-profile.jpg" alt="Therapist" class="h-8 w-8 rounded-full object-cover" />
@@ -104,16 +122,33 @@
         </div>
         <!-- Billing -->
         <div>
-          <button @click="showBilling = !showBilling" class="flex justify-between items-center text-xs uppercase text-faded w-full">
+          <button @click="showBilling = !showBilling" class="flex justify-between items-center text-xs uppercase text-faded w-full mb-2">
             <span>Billing</span>
             <span class="text-sm">{{ showBilling ? '▲' : '▼' }}</span>
           </button>
           <transition name="fade">
-            <ul v-show="showBilling" class="mt-2 space-y-2 text-sm text-slate-300">
-              <li class="cursor-pointer hover:text-white" @click="currentView = 'billing'">📊 Income & Payouts</li>
+            <ul v-show="showBilling" class="space-y-1 text-sm text-slate-300">
+              <li class="flex justify-between">
+                <span>Income (July)</span>
+                <span class="text-green-400 font-medium">$1,250</span>
+              </li>
+              <li class="flex justify-between">
+                <span>Next Payout</span>
+                <span class="text-faded">Aug 3</span>
+              </li>
+              <li class="flex justify-between">
+                <span>Unpaid Sessions</span>
+                <span class="text-red-400">3</span>
+              </li>
+              <li>
+                <button class="mt-2 w-full px-3 py-1 bg-indigo-700 hover:bg-indigo-600 text-white text-xs rounded shadow transition">
+                  View Full Billing →
+                </button>
+              </li>
             </ul>
           </transition>
         </div>
+
 
 
         <!-- Export -->
@@ -217,6 +252,22 @@
           <p class="mt-2 text-sm text-faded italic text-center">
             (Interactive Map Preview — click or speak to explore parts, themes, protectors...)
           </p>
+          <!-- Save & Summarize Controls -->
+          <div class="mt-6 flex justify-center gap-4">
+            <button
+                @click="summarizeMap()"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-full shadow transition"
+            >
+              📝 Summarize This Session
+            </button>
+            <button
+                @click="closeMapView()"
+                class="bg-slate-700 hover:bg-slate-600 text-slate-100 text-sm font-medium px-4 py-2 rounded-full border border-slate-500 transition"
+            >
+              💾 Save and Close Map
+            </button>
+          </div>
+
           <!-- Interaction Controls -->
           <div class="mt-6 flex justify-center gap-4">
             <button
@@ -490,6 +541,8 @@ import TagBadge from '../../components/TagBadge.vue'
 import { sampleTags } from '../../data/sampleTags'
 
 // 🔹 View and UI state
+const isAnonymized = ref(false)
+
 const currentView = ref('resource') // options: 'calendar', 'map', 'resource', etc.
 const selectedResource = ref(null)
 const selectedViewMode = ref('Clinical Supervision')
@@ -625,6 +678,22 @@ function openMapView(type) {
   mapType.value = type
   currentView.value = 'map'
   console.log(type === 'client' ? 'Opened Client Map' : 'Opened Therapist Map')
+}
+function summarizeMap() {
+  // Placeholder for AI tagging or summary logic
+  console.log("Map session summarized. (Tags, insights, etc.)")
+  alert("Summary triggered. (Future: show AI-generated insights)")
+}
+
+function closeMapView() {
+  // Return to default main canvas
+  currentView.value = 'resource' // or 'default', depending on your design
+  console.log("Map view closed and saved.")
+}
+function logout() {
+  console.log("Logging out... (future: call Supabase or backend auth)")
+  alert("Logged out. This will eventually clear session + redirect.")
+  // In production: Supabase.auth.signOut() + router.push('/login')
 }
 
 
